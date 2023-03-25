@@ -19,13 +19,14 @@ fun main() {
         Thread(
             Runnable {
                 try {
-                    val input = BufferedReader(InputStreamReader(clientSocket.getInputStream()))
+                    val reader = BufferedReader(InputStreamReader(clientSocket.getInputStream()))
 
                     while (true) {
-                        val message = input.readLine() ?: break
+                        val message = reader.readLine() ?: break
                         println("Получено сообщение от ${clientSocket.inetAddress.hostAddress}: $message")
-                        sendToAllClients(message, clients)
+                        sendToAllClients(message, clients, clientSocket)
                     }
+                    reader.close()
                 } catch (e: Exception) {
                     println("Ошибка при обработке соединения: ${e.message}")
                 } finally {
@@ -38,13 +39,15 @@ fun main() {
     }
 }
 
-fun sendToAllClients(message: String, clients: List<Socket>) {
-    clients.forEach { client ->
-        try {
-            val outputStream = PrintWriter(client.getOutputStream(), true)
-            outputStream.println(message)
-        } catch (e: Exception) {
-            println("Ошибка при отправке сообщения клиенту: ${e.message}")
+fun sendToAllClients(message: String, clients: List<Socket>, currSocket: Socket) {
+    clients.forEach { clientSocket ->
+        if (clientSocket != currSocket) {
+            try {
+                val outputStream = PrintWriter(clientSocket.getOutputStream(), true)
+                outputStream.println("${currSocket.inetAddress.hostAddress}: $message")
+            } catch (e: Exception) {
+                println("Ошибка при отправке сообщения клиенту: ${e.message}")
+            }
         }
     }
 }
