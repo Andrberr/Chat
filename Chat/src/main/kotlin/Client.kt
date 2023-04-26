@@ -33,15 +33,19 @@ fun main() {
                 }
             ).apply { start() }
 
-            var message: String
-            while (true) {
-                message = input.readLine() ?: break
-                output.println(message)
+            try {
+                var message: String
+                while (true) {
+                    message = input.readLine() ?: break
+                    output.println(message)
+                }
+            } catch (e: Exception) {
+                println("Ошибка при отправке сообщения на сервер: ${e.message}")
+            } finally {
+                output.close()
+                input.close()
+                socket.close()
             }
-
-            output.close()
-            input.close()
-            socket.close()
         } catch (e: UnknownHostException) {
             println("Неизвестный адрес сервера.")
         }
